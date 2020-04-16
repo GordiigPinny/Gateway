@@ -148,3 +148,4 @@ except ImportError as e:
 
 APP_ID = ENV['GATEWAY_APP_ID']
 APP_SECRET = ENV['GATEWAY_SECRET']
+ALLOW_REQUESTS = True
