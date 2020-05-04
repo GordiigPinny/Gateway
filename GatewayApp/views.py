@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView, Request, Response
 from ApiRequesters.Auth.permissions import IsAuthenticated
@@ -25,6 +26,33 @@ class BaseGatewayView(APIView, CollectStatsMixin):
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return auth_json
 
+    def add_achievement(self, request: Request, achievement_id: int, auth_json: dict):
+        """
+        1 -- создание профиля
+        2 -- Добавление места
+        3 -- Оставил рейтинг
+        4 -- Подтвердил существование
+        5 -- Удалил существование
+        6 -- Купил пин
+        """
+        try:
+            _, token_json = AuthRequester().app_get_token(settings.APP_ID, settings.APP_SECRET)
+            token = token_json['access']
+            _, user_json = UsersRequester().add_achievement(user_id=auth_json['id'], achievement_id=achievement_id,
+                                                            app_token=token)
+            return user_json
+        except (BaseApiRequestError, UnexpectedResponse):
+            return
+
+    def update_rating(self, request: Request, d_rating: int, auth_json: dict):
+        try:
+            _, token_json = AuthRequester().app_get_token(settings.APP_ID, settings.APP_SECRET)
+            token = token_json['access']
+            _, user_json = UsersRequester().change_rating(user_id=auth_json['id'], drating=d_rating, app_token=token)
+            return user_json
+        except BaseApiRequestError:
+            return
+
 
 class AddPlaceView(BaseGatewayView):
     """
@@ -34,7 +62,7 @@ class AddPlaceView(BaseGatewayView):
         token = get_token_from_request(request)
         try:
             _, new_place = PlacesRequester().create_place(**request.data, created_by=auth_json['id'], token=token)
-        except TypeError:
+        except TypeError as e:
             return Response({'error': 'Неправильный формат JSON'}, status=status.HTTP_400_BAD_REQUEST)
         except UnexpectedResponse as e:
             return Response(e.body, status=e.code)
@@ -51,7 +79,13 @@ class AddPlaceView(BaseGatewayView):
         new_place = self.post_place(request, auth_json)
         if isinstance(new_place, Response):
             return new_place
-        return Response(new_place, status=status.HTTP_201_CREATED)
+        new_user = self.add_achievement(request, 2, auth_json)
+        new_user = self.update_rating(request, 1000, auth_json) or new_user
+        ret_data = {
+            'place': new_place,
+            'profile': new_user,
+        }
+        return Response(ret_data, status=status.HTTP_201_CREATED)
 
 
 class AddRatingView(BaseGatewayView):
@@ -79,7 +113,13 @@ class AddRatingView(BaseGatewayView):
         new_rating = self.post_rating(request, auth_json)
         if isinstance(new_rating, Response):
             return new_rating
-        return Response(new_rating, status=status.HTTP_201_CREATED)
+        new_user = self.add_achievement(request, 3, auth_json)
+        new_user = self.update_rating(request, 30, auth_json) or new_user
+        ret_data = {
+            'rating': new_rating,
+            'profile': new_user
+        }
+        return Response(ret_data, status=status.HTTP_201_CREATED)
 
 
 class AddAcceptView(BaseGatewayView):
@@ -107,7 +147,13 @@ class AddAcceptView(BaseGatewayView):
         new_accept = self.post_accept(request, auth_json)
         if isinstance(new_accept, Response):
             return new_accept
-        return Response(new_accept, status=status.HTTP_201_CREATED)
+        new_user = self.add_achievement(request, 4, auth_json)
+        new_user = self.update_rating(request, 50, auth_json) or new_user
+        ret_data = {
+            'new_accept': new_accept,
+            'profile': new_user
+        }
+        return Response(ret_data, status=status.HTTP_201_CREATED)
 
 
 class DeleteAcceptanceView(BaseGatewayView):
@@ -134,7 +180,12 @@ class DeleteAcceptanceView(BaseGatewayView):
         is_resp = self.delete_accept(request, acceptance_id)
         if isinstance(is_resp, Response):
             return is_resp
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        new_user = self.add_achievement(request, 5, auth_json)
+        new_user = self.update_rating(request, 50, auth_json) or new_user
+        ret_data = {
+            'profile': new_user
+        }
+        return Response(ret_data, status=status.HTTP_204_NO_CONTENT)
 
 
 class BuyPinView(BaseGatewayView):
@@ -165,4 +216,6 @@ class BuyPinView(BaseGatewayView):
         user_json = self.buy_pin(request, auth_json)
         if isinstance(user_json, Response):
             return user_json
+        user_json = self.add_achievement(request, 6, auth_json) or user_json
+        user_json = self.update_rating(request, 100, auth_json) or user_json
         return Response(user_json, status=status.HTTP_201_CREATED)
