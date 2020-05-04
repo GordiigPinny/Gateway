@@ -199,11 +199,12 @@ class BuyPinView(BaseGatewayView):
     def buy_pin(self, request, auth_json):
         token = get_token_from_request(request)
         try:
+            _, app_token = AuthRequester().app_get_token(settings.APP_ID, settings.APP_SECRET)
             _, pin_json = AwardsRequester().get_pin(**request.data, token=token)
             _, user_json = UsersRequester().buy_pin(pin_id=pin_json['id'], user_id=auth_json['id'],
-                                                    price=pin_json['price'], token=token)
+                                                    price=pin_json['price'], app_token=app_token['access'])
             return user_json
-        except TypeError:
+        except TypeError as e:
             return Response({'error': 'Неправильный формат JSON'}, status=status.HTTP_400_BAD_REQUEST)
         except UnexpectedResponse as e:
             return Response(e.body, status=e.code)
