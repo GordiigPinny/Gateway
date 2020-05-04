@@ -150,7 +150,7 @@ class AddAcceptView(BaseGatewayView):
         new_user = self.add_achievement(request, 4, auth_json)
         new_user = self.update_rating(request, 50, auth_json) or new_user
         ret_data = {
-            'new_accept': new_accept,
+            'accept': new_accept,
             'profile': new_user
         }
         return Response(ret_data, status=status.HTTP_201_CREATED)
@@ -177,6 +177,10 @@ class DeleteAcceptanceView(BaseGatewayView):
         auth_json = self.get_user_info(request)
         if isinstance(auth_json, Response):
             return auth_json
+        try:
+            acceptance_id = int(acceptance_id)
+        except ValueError:
+            return Response({'error': 'Неправильный формат JSON'}, status=status.HTTP_400_BAD_REQUEST)
         is_resp = self.delete_accept(request, acceptance_id)
         if isinstance(is_resp, Response):
             return is_resp
