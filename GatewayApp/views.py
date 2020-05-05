@@ -79,13 +79,19 @@ class AddPlaceView(BaseGatewayView):
         new_place = self.post_place(request, auth_json)
         if isinstance(new_place, Response):
             return new_place
+        stats_kwargs = []
         new_user = self.add_achievement(request, 2, auth_json)
+        if new_user is not None:
+            stats_kwargs = [{
+                'request': request,
+                'achievement_id': 2,
+            }]
         new_user = self.update_rating(request, 1000, auth_json) or new_user
         ret_data = {
             'place': new_place,
             'profile': new_user,
         }
-        return Response(ret_data, status=status.HTTP_201_CREATED)
+        return Response(ret_data, status=status.HTTP_201_CREATED), stats_kwargs
 
 
 class AddRatingView(BaseGatewayView):
@@ -113,13 +119,19 @@ class AddRatingView(BaseGatewayView):
         new_rating = self.post_rating(request, auth_json)
         if isinstance(new_rating, Response):
             return new_rating
+        stats_kwargs = []
         new_user = self.add_achievement(request, 3, auth_json)
+        if new_user is not None:
+            stats_kwargs = [{
+                'request': request,
+                'achievement_id': 3,
+            }]
         new_user = self.update_rating(request, 30, auth_json) or new_user
         ret_data = {
             'rating': new_rating,
             'profile': new_user
         }
-        return Response(ret_data, status=status.HTTP_201_CREATED)
+        return Response(ret_data, status=status.HTTP_201_CREATED), stats_kwargs
 
 
 class AddAcceptView(BaseGatewayView):
@@ -147,13 +159,19 @@ class AddAcceptView(BaseGatewayView):
         new_accept = self.post_accept(request, auth_json)
         if isinstance(new_accept, Response):
             return new_accept
+        stats_kwargs = []
         new_user = self.add_achievement(request, 4, auth_json)
+        if new_user is not None:
+            stats_kwargs = [{
+                'request': request,
+                'achievement_id': 3,
+            }]
         new_user = self.update_rating(request, 50, auth_json) or new_user
         ret_data = {
             'accept': new_accept,
             'profile': new_user
         }
-        return Response(ret_data, status=status.HTTP_201_CREATED)
+        return Response(ret_data, status=status.HTTP_201_CREATED), stats_kwargs
 
 
 class DeleteAcceptanceView(BaseGatewayView):
@@ -172,7 +190,7 @@ class DeleteAcceptanceView(BaseGatewayView):
             return Response({'error': 'Проблемы с сервисом мест, попробуйте позже'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @collect_request_stats_decorator()
+    @collect_request_stats_decorator(another_stats_funcs=[CollectStatsMixin.collect_achievement_stats])
     def delete(self, request: Request, acceptance_id):
         auth_json = self.get_user_info(request)
         if isinstance(auth_json, Response):
@@ -184,12 +202,18 @@ class DeleteAcceptanceView(BaseGatewayView):
         is_resp = self.delete_accept(request, acceptance_id)
         if isinstance(is_resp, Response):
             return is_resp
+        stats_kwargs = []
         new_user = self.add_achievement(request, 5, auth_json)
+        if new_user is not None:
+            stats_kwargs = [{
+                'request': request,
+                'achievement_id': 5,
+            }]
         new_user = self.update_rating(request, 50, auth_json) or new_user
         ret_data = {
             'profile': new_user
         }
-        return Response(ret_data, status=status.HTTP_204_NO_CONTENT)
+        return Response(ret_data, status=status.HTTP_204_NO_CONTENT), stats_kwargs
 
 
 class BuyPinView(BaseGatewayView):
@@ -218,9 +242,19 @@ class BuyPinView(BaseGatewayView):
         auth_json = self.get_user_info(request)
         if isinstance(auth_json, Response):
             return auth_json
+        stats_kwargs = []
         user_json = self.buy_pin(request, auth_json)
         if isinstance(user_json, Response):
             return user_json
-        user_json = self.add_achievement(request, 6, auth_json) or user_json
+        stats_kwargs.append({
+            'request': request,
+            'pin_id': request.data['pin_id']
+        })
+        new_user = self.add_achievement(request, 6, auth_json)
+        if new_user is not None:
+            stats_kwargs.append({
+                'request': request,
+                'achievement_id': 6,
+            })
         user_json = self.update_rating(request, 100, auth_json) or user_json
-        return Response(user_json, status=status.HTTP_201_CREATED)
+        return Response(user_json, status=status.HTTP_201_CREATED), stats_kwargs
