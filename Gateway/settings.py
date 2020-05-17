@@ -61,6 +61,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'Gateway.urls'
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ]
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -145,6 +151,12 @@ try:
     from ApiRequesters.settings import *
 except ImportError as e:
     raise e
+
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ]
 
 APP_ID = ENV['GATEWAY_APP_ID']
 APP_SECRET = ENV['GATEWAY_SECRET']
