@@ -193,7 +193,6 @@ class DeleteAcceptanceView(BaseGatewayView):
     @collect_request_stats_decorator(another_stats_funcs=[CollectStatsMixin.collect_achievement_stats])
     def delete(self, request: Request, acceptance_id):
         auth_json = self.get_user_info(request)
-        print(f'Auth json: {auth_json}')
         if isinstance(auth_json, Response):
             return auth_json
         try:
@@ -203,21 +202,20 @@ class DeleteAcceptanceView(BaseGatewayView):
         is_resp = self.delete_accept(request, acceptance_id)
         if isinstance(is_resp, Response):
             return is_resp
-        print('Deleted acceptance')
         stats_kwargs = []
         new_user = self.add_achievement(request, 5, auth_json)
-        print(f'New user: {new_user}')
         if new_user is not None:
             stats_kwargs = [{
                 'request': request,
                 'achievement_id': 5,
             }]
         new_user = self.update_rating(request, 50, auth_json) or new_user
-        print(f'New user after update_rating: {new_user}')
         ret_data = {
             'profile': new_user
         }
-        print(f'ret_data: {ret_data}')
+        ret_data = {
+            'hello': 'world'
+        }
         return Response(ret_data, status=status.HTTP_204_NO_CONTENT), stats_kwargs
 
 
