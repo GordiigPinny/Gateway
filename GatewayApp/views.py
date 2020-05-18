@@ -213,9 +213,6 @@ class DeleteAcceptanceView(BaseGatewayView):
         ret_data = {
             'profile': new_user
         }
-        ret_data = {
-            'hello': 'world'
-        }
         return Response(ret_data, status=status.HTTP_204_NO_CONTENT), stats_kwargs
 
 
