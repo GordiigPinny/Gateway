@@ -213,7 +213,7 @@ class DeleteAcceptanceView(BaseGatewayView):
         ret_data = {
             'profile': new_user
         }
-        return Response(data={'hello': 'world'}, status=status.HTTP_204_NO_CONTENT), stats_kwargs
+        return Response(data='hello', status=status.HTTP_204_NO_CONTENT), stats_kwargs
 
 
 class BuyPinView(BaseGatewayView):
