@@ -213,9 +213,7 @@ class DeleteAcceptanceView(BaseGatewayView):
         ret_data = {
             'profile': new_user
         }
-        import json
-        ret_json = json.dumps(ret_data, indent=4)
-        return Response(data=ret_json, status=status.HTTP_204_NO_CONTENT), stats_kwargs
+        return Response(data=ret_data, status=status.HTTP_204_NO_CONTENT), stats_kwargs
 
 
 class BuyPinView(BaseGatewayView):
