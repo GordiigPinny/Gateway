@@ -50,7 +50,8 @@ class BaseGatewayView(APIView, CollectStatsMixin):
             token = token_json['access']
             _, user_json = UsersRequester().change_rating(user_id=auth_json['id'], drating=d_rating, app_token=token)
             return user_json
-        except BaseApiRequestError:
+        except BaseApiRequestError as e:
+            print(f'=== ERROR ON UPDATE_RATING = {str(e)} ===')
             return
 
 
