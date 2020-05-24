@@ -191,7 +191,7 @@ class DeleteAcceptanceView(BaseGatewayView):
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @collect_request_stats_decorator(another_stats_funcs=[CollectStatsMixin.collect_achievement_stats])
-    def patch(self, request: Request, acceptance_id):
+    def get(self, request: Request, acceptance_id):
         auth_json = self.get_user_info(request)
         if isinstance(auth_json, Response):
             return auth_json
