@@ -190,7 +190,7 @@ class DeleteAcceptanceView(BaseGatewayView):
             return Response({'error': 'Проблемы с сервисом мест, попробуйте позже'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @collect_request_stats_decorator(another_stats_funcs=[CollectStatsMixin.collect_achievement_stats])
+    # @collect_request_stats_decorator(another_stats_funcs=[CollectStatsMixin.collect_achievement_stats])
     def delete(self, request: Request, acceptance_id):
         auth_json = self.get_user_info(request)
         if isinstance(auth_json, Response):
@@ -213,7 +213,7 @@ class DeleteAcceptanceView(BaseGatewayView):
         ret_data = {
             'profile': new_user
         }
-        return Response(data=ret_data, status=status.HTTP_204_NO_CONTENT), stats_kwargs
+        return Response(data=ret_data, status=status.HTTP_204_NO_CONTENT) #, stats_kwargs
 
 
 class BuyPinView(BaseGatewayView):
