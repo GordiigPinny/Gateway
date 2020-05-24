@@ -117,20 +117,24 @@ class AddRatingView(BaseGatewayView):
         if isinstance(auth_json, Response):
             return auth_json
         new_rating = self.post_rating(request, auth_json)
+        print(f'=== NEW RATING = {new_rating} ===')
         if isinstance(new_rating, Response):
             return new_rating
         stats_kwargs = []
         new_user = self.add_achievement(request, 3, auth_json)
+        print(f'=== NEW USER 1 = {new_user} ===')
         if new_user is not None:
             stats_kwargs = [{
                 'request': request,
                 'achievement_id': 3,
             }]
         new_user = self.update_rating(request, 30, auth_json) or new_user
+        print(f'=== NEW USER 2 = {new_user} ===')
         ret_data = {
             'rating': new_rating,
             'profile': new_user
         }
+        print(f'=== RET DATA = {ret_data} ===')
         return Response(ret_data, status=status.HTTP_201_CREATED), stats_kwargs
 
 
@@ -191,7 +195,7 @@ class DeleteAcceptanceView(BaseGatewayView):
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @collect_request_stats_decorator(another_stats_funcs=[CollectStatsMixin.collect_achievement_stats])
-    def get(self, request: Request, acceptance_id):
+    def delete(self, request: Request, acceptance_id):
         auth_json = self.get_user_info(request)
         if isinstance(auth_json, Response):
             return auth_json
