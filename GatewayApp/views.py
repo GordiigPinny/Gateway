@@ -190,8 +190,8 @@ class DeleteAcceptanceView(BaseGatewayView):
             return Response({'error': 'Проблемы с сервисом мест, попробуйте позже'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @collect_request_stats_decorator(another_stats_funcs=[])
-    def delete(self, request: Request, acceptance_id):
+    @collect_request_stats_decorator(another_stats_funcs=[CollectStatsMixin.collect_achievement_stats])
+    def patch(self, request: Request, acceptance_id):
         auth_json = self.get_user_info(request)
         if isinstance(auth_json, Response):
             return auth_json
@@ -202,19 +202,18 @@ class DeleteAcceptanceView(BaseGatewayView):
         is_resp = self.delete_accept(request, acceptance_id)
         if isinstance(is_resp, Response):
             return is_resp
-        # stats_kwargs = []
-        # new_user = self.add_achievement(request, 5, auth_json)
-        # if new_user is not None:
-        #     stats_kwargs = [{
-        #         'request': request,
-        #         'achievement_id': 5,
-        #     }]
-        # new_user = self.update_rating(request, 50, auth_json) or new_user
-        # ret_data = {
-        #     'profile': new_user
-        # }
-        ret_data = {'hello', 'world'}
-        return Response(data=ret_data, status=status.HTTP_204_NO_CONTENT) #, stats_kwargs
+        stats_kwargs = []
+        new_user = self.add_achievement(request, 5, auth_json)
+        if new_user is not None:
+            stats_kwargs = [{
+                'request': request,
+                'achievement_id': 5,
+            }]
+        new_user = self.update_rating(request, 50, auth_json) or new_user
+        ret_data = {
+            'profile': new_user
+        }
+        return Response(data=ret_data, status=status.HTTP_204_NO_CONTENT), stats_kwargs
 
 
 class BuyPinView(BaseGatewayView):
